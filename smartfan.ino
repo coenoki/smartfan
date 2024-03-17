@@ -1,16 +1,17 @@
 #include <DHT.h>
 
 // Temperature sensor
-#define DHTPIN 2 
-#define DHTTYPE DHT11
+#define DHTPIN 2 // Data PIN of DHT11 (temp sensor)
+#define DHTTYPE DHT11 // Type of temp sensor
 
 // Ultrasonic sensor
-#define TRIGPIN 11
-#define ECHOPIN 12
+#define TRIGPIN 11 // Trigger to start distance measurement
+#define ECHOPIN 12 // ECHOPIN is used to read the distance
+
 
 // Motor for the fan
-#define FANSPEEDPIN 9
-#define FANENABLEPIN 10
+#define FANSPEEDPIN 9   // Controlls the speed of the fan
+#define FANENABLEPIN 10 //Enables/disables the motor that spins the fan
 
 // LEDs
 #define LED_GREEN 3
@@ -24,13 +25,10 @@
 // DHT (temperature) sensor instance
 DHT dht(DHTPIN, DHTTYPE);
 
-int lastButtonState = HIGH;
+int lastButtonState = LOW; // keeps track of previous state (high or low) of the button. Tells the if the button is being pressed or not.
 
-unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 50;
-
-int speedLevels[4] = {0, 85, 170, 255};
-int currentSpeedLevel = 0;
+int speedLevels[4] = {0, 100, 170, 255};
+int currentSpeedLevel = 2;
 
 void setup() {
   pinMode(FANSPEEDPIN, OUTPUT);
@@ -47,45 +45,43 @@ void setup() {
   Serial.begin(9600);
 }
 
-void loop() {
+void loop() { // arduino calls the loop infinitely
   float temp = dht.readTemperature();
-  if (isnan(temp)) {
+  if (isnan(temp)) { // checks if it can read from the sensor (temperature sensor)
     Serial.println("Failed to read from DHT sensor");
     return;
   }
+  // prints the current temperature
   Serial.println("Current temp: ");
   Serial.println(temp);
-  
+  // checks if something is near the ultrasonic sensor
   bool isClose = isObjectClose();
 
-  /*  
-  if (temp > 22.5 && isClose) {
+  // it checks if the temp is over 24c and there is an object nearby. If it meets the requirements, it starts the fan.
+  if (temp > 24 && isClose) {
     digitalWrite(FANENABLEPIN, HIGH);
     analogWrite(FANSPEEDPIN, speedLevels[currentSpeedLevel]);
   } else {
     digitalWrite(FANENABLEPIN, LOW);
   }
+
+  // When the button is pressed, the code cycles through the fan speeds and LEDs change.
   int reading = digitalRead(BUTTONPIN);
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();
-  }
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (reading == LOW) {
-        currentSpeedLevel++;
-      if (currentSpeedLevel > 3) {
-        currentSpeedLevel = 0;
-      }
-      analogWrite(FANSPEEDPIN, speedLevels[currentSpeedLevel]);
-      updateLEDS(currentSpeedLevel);
+  if ((lastButtonState == LOW) && (reading == HIGH)) {
+    currentSpeedLevel++;
+    if (currentSpeedLevel > 3) {
+      currentSpeedLevel = 0;
     }
+    analogWrite(FANSPEEDPIN, speedLevels[currentSpeedLevel]);
+    updateLEDS(currentSpeedLevel);
   }
+
   lastButtonState = reading;
-  */
 
   // Small delay to avoid reading noise
-  delay(10);
+  delay(2);
 }
-
+// when the distance is less than 20cm, it returns true.
 bool isObjectClose() {
   digitalWrite(TRIGPIN, LOW);
   delayMicroseconds(2);
@@ -102,8 +98,8 @@ bool isObjectClose() {
   return distance < 20; // Returns true if object is closer than 20 cm
 }
 
-/*
-void updateLEDS(int level) {
+
+void updateLEDS(int level) { // updates the LEDs which corresponds to the speed.
   // Turn off all LEDs
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_YELLOW, LOW);
@@ -111,14 +107,13 @@ void updateLEDS(int level) {
   digitalWrite(LED_RED, LOW);
 
   // Turn on a specific LED based on the current speed level
-  if (level == 1) {
+  if (level == 0) {
     digitalWrite(LED_GREEN, HIGH);
-  } else if (level == 2) {
+  } else if (level == 1) {
     digitalWrite(LED_YELLOW, HIGH);
-  } else if (level == 3) {
+  } else if (level == 2) {
     digitalWrite(LED_BLUE, HIGH);
-  } else if (level == 4) {
+  } else if (level == 3) {
     digitalWrite(LED_RED, HIGH);
   }
 }
-*/
