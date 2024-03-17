@@ -5,8 +5,8 @@
 #define DHTTYPE DHT11
 
 // Ultrasonic sensor
-#define TRIGPIN 3
-#define ECHOPIN 4 
+#define TRIGPIN 11
+#define ECHOPIN 12
 
 // Motor for the fan
 #define FANSPEEDPIN 9
@@ -55,9 +55,10 @@ void loop() {
   }
   Serial.println("Current temp: ");
   Serial.println(temp);
-
-  /*
+  
   bool isClose = isObjectClose();
+
+  /*  
   if (temp > 22.5 && isClose) {
     digitalWrite(FANENABLEPIN, HIGH);
     analogWrite(FANSPEEDPIN, speedLevels[currentSpeedLevel]);
@@ -95,9 +96,13 @@ bool isObjectClose() {
   long duration = pulseIn(ECHOPIN, HIGH);
   float distance = (duration / 2) * 0.0343;
 
+  Serial.println("Current Distance:");
+  Serial.println(distance);
+
   return distance < 20; // Returns true if object is closer than 20 cm
 }
 
+/*
 void updateLEDS(int level) {
   // Turn off all LEDs
   digitalWrite(LED_GREEN, LOW);
@@ -116,3 +121,4 @@ void updateLEDS(int level) {
     digitalWrite(LED_RED, HIGH);
   }
 }
+*/
